@@ -4,6 +4,10 @@ Helps to estimate costs of Terraform Plans for the AzureRM Terraform Provider
 ## Design
 ![Terraform Cost Estimation Architecture Diagram](./assets/Terraform%20Cost%20Estimator%20Design.png)
 
+## Usage
+```bash
+terraform plan -out=plan.tfplan > /dev/null && terraform show -json plan.tfplan  | curl -s -X POST -H "Content-Type: application/json" -d @- https://api.pricing.tf/estimate
+```
 ## Resource Enumeration
 I came up with an ARN-like syntax to uniquely identify product family/sku combinations for pricing, this was for two reasons:
 * While the `MeterId` uniquely identifies a billable asset in Azure, terraform state files do not contain this information

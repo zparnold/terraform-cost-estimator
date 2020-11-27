@@ -5,9 +5,13 @@ import "time"
 type ApiResp struct {
 	//Future Work
 	//PriceItems []ApiRespPriceItem `json:"price_items"`
-	EstimatedHourlyCost  float64 `json:"estimated_hourly_cost_usd"`
-	EstimatedMonthlyCost float64 `json:"estimated_monthly_cost_usd"`
-	EstimatedYearlyCost  float64 `json:"estimated_yearly_cost_usd"`
+	UnsupportedResources []string `json:"unsupported_resources,omitempty"`
+	TotalEstimate EstimateTotal `json:"summary"`
+}
+type EstimateTotal struct {
+	HourlyCost  float64 `json:"hourly_cost_usd"`
+	MonthlyCost float64 `json:"monthly_cost_usd"`
+	YearlyCost  float64 `json:"yearly_cost_usd"`
 }
 type ApiRespPriceItem struct {
 	ResourceType string  `json:"resource_type"`
@@ -27,6 +31,7 @@ type ResourceChange struct {
 	Type     string `json:"type"`
 	Provider string `json:"provider_name"`
 	Change   Change `json:"change"`
+	Address string `json:"address"`
 }
 
 type Change struct {

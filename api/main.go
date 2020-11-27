@@ -27,7 +27,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (Respon
 	var r common.ApiResp
 	var resp Response
 
-	price, err := PricePlanFile(request.Body)
+	price, unsupportedResources, err := PricePlanFile(request.Body)
 	if err != nil {
 		resp = Response{
 			StatusCode:      500,
@@ -38,10 +38,10 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (Respon
 			},
 		}
 	}
-	r.EstimatedHourlyCost = price
-	r.EstimatedMonthlyCost = price * MONTH_HOURS
-	r.EstimatedYearlyCost = price * YEAR_HOURS
-
+	r.TotalEstimate.HourlyCost = price
+	r.TotalEstimate.MonthlyCost = price * MONTH_HOURS
+	r.TotalEstimate.YearlyCost = price * YEAR_HOURS
+	r.UnsupportedResources = unsupportedResources
 	b, err := json.Marshal(r)
 	if err != nil {
 		resp = Response{
@@ -64,36 +64,43 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (Respon
 
 	return resp, nil
 }
-func PricePlanFile(jsonBlob string) (float64, error) {
+func PricePlanFile(jsonBlob string) (float64, []string, error) {
+	var unsupportedResources []string
 	var pf common.PlanFile
 	err := json.Unmarshal([]byte(jsonBlob), &pf)
 	if err != nil {
 		klog.Error(err)
-		return 0.0, err
+		return 0.0, []string{}, err
 	}
 	var hourlyPrice float64
+	var resources []pricers.Pricer
+
 	for _, change := range pf.ResourceChanges {
 		//we only want to price Azure API changes
 		if change.Provider == "registry.terraform.io/hashicorp/azurerm" {
 			//Until I find a better way we need to explicitly opt-in price types
 			switch change.Type {
 			case "azurerm_linux_virtual_machine":
-				vm := pricers.VirtualMachine{
-					Size:     change.Change.After.(map[string]interface{})["size"].(string),
-					Location: change.Change.After.(map[string]interface{})["location"].(string),
+				resources = append(resources)
+				loc := change.Change.After.(map[string]interface{})["location"].(string)
+				size := change.Change.After.(map[string]interface{})["size"].(string)
+				vm := pricers.LinuxVM{
+					Size:     size,
+					Location: loc,
 				}
 				hourlyPrice += vm.GetHourlyPrice()
-			default:
-				break
 
+			//This is where a resource that is unsupported	will fall through
+			default:
+				unsupportedResources = append(unsupportedResources, change.Address)
+				break
 			}
 		}
 	}
-	fmt.Println(hourlyPrice)
-	return hourlyPrice, nil
+
+	return hourlyPrice, unsupportedResources, nil
 }
+
 func main() {
 	lambda.Start(Handler)
 }
-
-

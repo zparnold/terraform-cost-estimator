@@ -19,3 +19,4 @@ bin
 .idea
 .terraform
 test/ignore.txt
+*.tfplan

@@ -6,11 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/zparnold/azure-terraform-cost-estimator/common"
 	"io/ioutil"
@@ -25,7 +22,7 @@ func Handler(ctx context.Context) error {
 	klog.InitFlags(nil)
 	var mergedItemList []common.AzurePricingApiItem
 	var azurePricingResp common.AzurePricingApiResp
-	klog.V(2).Infoln("GET https://prices.azure.com/api/retail/prices")
+	klog.Infoln("GET https://prices.azure.com/api/retail/prices")
 	resp, err := http.Get("https://prices.azure.com/api/retail/prices")
 	if err != nil || resp.StatusCode > 299 {
 		return err
@@ -41,7 +38,7 @@ func Handler(ctx context.Context) error {
 	mergedItemList = append(mergedItemList, azurePricingResp.Items...)
 
 	for azurePricingResp.NextPageLink != nil {
-		klog.V(2).Infoln("GET ", *azurePricingResp.NextPageLink)
+		klog.Infoln("GET ", *azurePricingResp.NextPageLink)
 		resp, err := http.Get(*azurePricingResp.NextPageLink)
 		if err != nil || resp.StatusCode > 299 {
 			return err
@@ -101,12 +98,12 @@ func DumpPricesToDynamo(priceData *[]common.AzurePricingApiItem) error {
 		if item.Type == "Consumption" {
 			id := common.GetArnForAzureApiItem(&item)
 			klog.Infoln("Processing: ", id)
-			dynamoItems := GetItemIfExists(id)
+			dynamoItems := common.GetItemIfExists(id)
 			//Record doesn't exist
 			if dynamoItems == nil {
 				var putItems []common.AzurePricingApiItem
 				putItems = mergePriceItems(item, putItems)
-				err := PutPriceItemsWithId(id, &putItems)
+				err := common.PutPriceItemsWithId(id, &putItems)
 				if err != nil {
 					klog.Error(err)
 					errFlag = true
@@ -114,7 +111,7 @@ func DumpPricesToDynamo(priceData *[]common.AzurePricingApiItem) error {
 			} else {
 				//Merge items and then put them back
 				*dynamoItems = mergePriceItems(item, *dynamoItems)
-				err := PutPriceItemsWithId(id, dynamoItems)
+				err := common.PutPriceItemsWithId(id, dynamoItems)
 				if err != nil {
 					klog.Error(id, err)
 					errFlag = true
@@ -132,8 +129,8 @@ func DumpPricesToDynamo(priceData *[]common.AzurePricingApiItem) error {
 
 
 func main() {
-	lambda.Start(Handler)
-	//Handler(context.Background())
+	//lambda.Start(Handler)
+	Handler(context.Background())
 }
 
 func mergePriceItems(srcItem common.AzurePricingApiItem, destItems []common.AzurePricingApiItem) []common.AzurePricingApiItem {
@@ -158,99 +155,4 @@ func mergePriceItems(srcItem common.AzurePricingApiItem, destItems []common.Azur
 	}
 }
 
-func PutPriceItemsWithId(id string, items *[]common.AzurePricingApiItem) error {
-	svc := dynamodb.New(session.Must(session.NewSession(&aws.Config{Region: aws.String(os.Getenv("AWS_REGION"))})))
-	jsonBlob, err := json.Marshal(*items)
-	if err != nil {
-		klog.Error(err)
-		return err
-	}
-	input := &dynamodb.PutItemInput{
-		Item: map[string]*dynamodb.AttributeValue{
-			"id": {
-				S: aws.String(id),
-			},
-			"priceItems": {
-				S: aws.String(string(jsonBlob)),
-			},
-		},
-		TableName: aws.String(os.Getenv("DYNAMO_TABLE")),
-	}
 
-	_, err = svc.PutItem(input)
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeConditionalCheckFailedException:
-				klog.Error(dynamodb.ErrCodeConditionalCheckFailedException, aerr.Error())
-			case dynamodb.ErrCodeProvisionedThroughputExceededException:
-				klog.Error(dynamodb.ErrCodeProvisionedThroughputExceededException, aerr.Error())
-			case dynamodb.ErrCodeResourceNotFoundException:
-				klog.Error(dynamodb.ErrCodeResourceNotFoundException, aerr.Error())
-			case dynamodb.ErrCodeItemCollectionSizeLimitExceededException:
-				klog.Error(dynamodb.ErrCodeItemCollectionSizeLimitExceededException, aerr.Error())
-			case dynamodb.ErrCodeTransactionConflictException:
-				klog.Error(dynamodb.ErrCodeTransactionConflictException, aerr.Error())
-			case dynamodb.ErrCodeRequestLimitExceeded:
-				klog.Error(dynamodb.ErrCodeRequestLimitExceeded, aerr.Error())
-			case dynamodb.ErrCodeInternalServerError:
-				klog.Error(dynamodb.ErrCodeInternalServerError, aerr.Error())
-			default:
-				klog.Error(aerr.Error())
-			}
-			return err
-		} else {
-			// Print the error, cast err to awserr.Error to get the Code and
-			// Message from an error.
-			klog.Error(err.Error())
-			return err
-		}
-	}
-	return nil
-}
-
-func GetItemIfExists(id string) *[]common.AzurePricingApiItem {
-	svc := dynamodb.New(session.Must(session.NewSession(&aws.Config{Region: aws.String(os.Getenv("AWS_REGION"))})))
-	input := &dynamodb.GetItemInput{
-		Key: map[string]*dynamodb.AttributeValue{
-			"id": {
-				S: aws.String(id),
-			},
-		},
-		TableName: aws.String(os.Getenv("DYNAMO_TABLE")),
-	}
-
-	result, err := svc.GetItem(input)
-	if err != nil {
-		if aerr, ok := err.(awserr.Error); ok {
-			switch aerr.Code() {
-			case dynamodb.ErrCodeProvisionedThroughputExceededException:
-				klog.Error(dynamodb.ErrCodeProvisionedThroughputExceededException, aerr.Error())
-			case dynamodb.ErrCodeResourceNotFoundException:
-				klog.Error(dynamodb.ErrCodeResourceNotFoundException, aerr.Error())
-			case dynamodb.ErrCodeRequestLimitExceeded:
-				klog.Error(dynamodb.ErrCodeRequestLimitExceeded, aerr.Error())
-			case dynamodb.ErrCodeInternalServerError:
-				klog.Error(dynamodb.ErrCodeInternalServerError, aerr.Error())
-			default:
-				klog.Error(aerr.Error())
-			}
-			return nil
-		} else {
-			// Print the error, cast err to awserr.Error to get the Code and
-			// Message from an error.
-			klog.Error(err.Error())
-			return nil
-		}
-	}
-	if result.Item == nil{
-		return nil
-	}
-	var items []common.AzurePricingApiItem
-	err = json.Unmarshal([]byte(*result.Item["priceItems"].S), &items)
-	if err != nil {
-		klog.Error(err)
-		return nil
-	}
-	return &items
-}
