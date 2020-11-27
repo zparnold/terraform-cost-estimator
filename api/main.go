@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/zparnold/azure-terraform-cost-estimator/api/pricers"
+	"github.com/zparnold/azure-terraform-cost-estimator/common"
 	"k8s.io/klog"
 )
 
@@ -23,7 +24,7 @@ type Response events.APIGatewayProxyResponse
 
 // Handler is our lambda handler invoked by the `lambda.Start` function call
 func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (Response, error) {
-	var r ApiResp
+	var r common.ApiResp
 	var resp Response
 
 	price, err := PricePlanFile(request.Body)
@@ -64,7 +65,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (Respon
 	return resp, nil
 }
 func PricePlanFile(jsonBlob string) (float64, error) {
-	var pf PlanFile
+	var pf common.PlanFile
 	err := json.Unmarshal([]byte(jsonBlob), &pf)
 	if err != nil {
 		klog.Error(err)
@@ -95,33 +96,4 @@ func main() {
 	lambda.Start(Handler)
 }
 
-type ApiResp struct {
-	//Future Work
-	//PriceItems []PriceItem `json:"price_items"`
-	EstimatedHourlyCost  float64 `json:"estimated_hourly_cost_usd"`
-	EstimatedMonthlyCost float64 `json:"estimated_monthly_cost_usd"`
-	EstimatedYearlyCost  float64 `json:"estimated_yearly_cost_usd"`
-}
-type PriceItem struct {
-	ResourceType string  `json:"resource_type"`
-	Price        float64 `json:"price"`
-}
 
-/*
-
-We're making our own statefile because the number of fields we need is very low
-*/
-
-type PlanFile struct {
-	ResourceChanges []ResourceChange `json:"resource_changes"`
-}
-
-type ResourceChange struct {
-	Type     string `json:"type"`
-	Provider string `json:"provider_name"`
-	Change   Change `json:"change"`
-}
-
-type Change struct {
-	After interface{} `json:"after"`
-}

@@ -1,6 +1,37 @@
-package main
+package common
 
 import "time"
+
+type ApiResp struct {
+	//Future Work
+	//PriceItems []ApiRespPriceItem `json:"price_items"`
+	EstimatedHourlyCost  float64 `json:"estimated_hourly_cost_usd"`
+	EstimatedMonthlyCost float64 `json:"estimated_monthly_cost_usd"`
+	EstimatedYearlyCost  float64 `json:"estimated_yearly_cost_usd"`
+}
+type ApiRespPriceItem struct {
+	ResourceType string  `json:"resource_type"`
+	Price        float64 `json:"price"`
+}
+
+/*
+
+We're making our own statefile because the number of fields we need is very low
+*/
+
+type PlanFile struct {
+	ResourceChanges []ResourceChange `json:"resource_changes"`
+}
+
+type ResourceChange struct {
+	Type     string `json:"type"`
+	Provider string `json:"provider_name"`
+	Change   Change `json:"change"`
+}
+
+type Change struct {
+	After interface{} `json:"after"`
+}
 
 type AzurePricingApiResp struct {
 	BillingCurrency    string                `json:"BillingCurrency"`
@@ -33,3 +64,4 @@ type AzurePricingApiItem struct {
 	IsPrimaryMeterRegion bool      `json:"isPrimaryMeterRegion"`
 	ArmSkuName           string    `json:"armSkuName"`
 }
+
