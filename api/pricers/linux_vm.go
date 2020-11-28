@@ -7,10 +7,11 @@ import (
 )
 
 type LinuxVM struct {
-	Size                   string
-	Location               string
-	IsSpotEnabled          bool
-	IsLowPriority          bool
+	Size          string
+	Location      string
+	Count         float64
+	IsSpotEnabled bool
+	IsLowPriority bool
 }
 
 func (v *LinuxVM) GetHourlyPrice() float64 {
@@ -20,11 +21,11 @@ func (v *LinuxVM) GetHourlyPrice() float64 {
 		return unitPrice
 	}
 	for _, vmPriceItem := range *vms {
-		if v.IsSpotEnabled && strings.Contains(vmPriceItem.SkuName, "Spot") && !(strings.Contains(vmPriceItem.ProductName, "Windows")){
+		if v.IsSpotEnabled && strings.Contains(vmPriceItem.SkuName, "Spot") && !(strings.Contains(vmPriceItem.ProductName, "Windows")) {
 			unitPrice = vmPriceItem.UnitPrice
 			break
 		}
-		if v.IsLowPriority && strings.Contains(vmPriceItem.SkuName, "Low Priority") && !(strings.Contains(vmPriceItem.ProductName, "Windows")){
+		if v.IsLowPriority && strings.Contains(vmPriceItem.SkuName, "Low Priority") && !(strings.Contains(vmPriceItem.ProductName, "Windows")) {
 			unitPrice = vmPriceItem.UnitPrice
 			break
 		}
@@ -33,7 +34,7 @@ func (v *LinuxVM) GetHourlyPrice() float64 {
 			break
 		}
 	}
-	return unitPrice
+	return unitPrice * v.Count
 }
 
 func (v *LinuxVM) GetArn() string {

@@ -1,6 +1,5 @@
 service: azure-terraform-cost-estimator
 frameworkVersion: '2'
-
 provider:
   name: aws
   runtime: go1.x
@@ -41,7 +40,7 @@ functions:
   extractor:
     handler: bin/extractor
     events:
-      - schedule: rate(24 hours)
+      - schedule: rate(30 days)
   api:
     handler: bin/api
     events:
