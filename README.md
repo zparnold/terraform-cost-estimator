@@ -1,8 +1,10 @@
 # Terraform Cost Estimator (right now just for Azure)
 
-Helps to estimate costs of Terraform Plans for the AzureRM Terraform Provider
+Helps to estimate costs of Terraform Plans for the AzureRM Terraform Provider. *Note these are estimates only (not actual costs)
+based on "Pay-as-you-Go" pricing. The point is only so you have a ballpark, not a guarantee of potential future costs.* 
 
 ## Usage
+*One more time for emphasis, this is only and estimate of expected future cloud costs.*
 ```bash
 terraform plan -out=plan.tfplan > /dev/null && terraform show -json plan.tfplan  | curl -s -X POST -H "Content-Type: application/json" -d @- https://api.pricing.tf/estimate
 ```
@@ -15,7 +17,7 @@ terraform plan -out=plan.tfplan > /dev/null && terraform show -json plan.tfplan 
         "azurerm_subnet.example",
         "azurerm_virtual_network.example"
     ],
-    "summary": {
+    "estimate_summary": {
         "hourly_cost_usd": 0.114,
         "monthly_cost_usd": 83.22,
         "yearly_cost_usd": 998.64
@@ -24,7 +26,7 @@ terraform plan -out=plan.tfplan > /dev/null && terraform show -json plan.tfplan 
 ```
 The response provides:
 * `unsupported_resources` to let you know which resources weren't priced
-* `summary` which contains the Hourly, Monthly, and Yearly additional cost based on this Terraform plan
+* `estimate_summary` which contains the Hourly, Monthly, and Yearly additional cost based on this Terraform plan
 
 _Note: currently "monthly" and "yearly" prices are only calculated as a multiple of hours. 1 Month = 730 Hours and 1 Year = 8760 Hours._
 
