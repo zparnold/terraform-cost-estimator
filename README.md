@@ -1,10 +1,19 @@
-# Terraform Cost Estimator (right now just for Azure)
+# Terraform Cost Estimator
 
-Helps to estimate costs of Terraform Plans for the AzureRM Terraform Provider. *Note these are estimates only (not actual costs)
-based on "Pay-as-you-Go" pricing. The point is only so you have a ballpark, not a guarantee of potential future costs.* 
+Helps to estimate costs of Terraform Plans and right now is focused on the [`azurerm`](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs) 
+Terraform Provider. _Note these are **estimates only** (not actual costs)
+based on "Pay-as-you-Go" pricing. The point of this API is only so you have a ballpark, not a guarantee of potential future costs._ 
+If you're looking for other pricing schemes, such as "reserved", "DevTest pricing", or if your company has an agreement
+with Azure that gives you a discount off of standard "Pay-as-you-Go" list prices, this will not be reflected here. Hopefully,
+if you are looking for one of these pricing schemes, this API should at least provide you with an upper-bound. However,
+it in no way represents a guarantee of prices between you and your cloud provider.
+
+### Can I use this for more cloud providers than Azure?
+It is definitely designed to provide this functionality, but at present since I work at a company that uses Azure, so I'm
+focused on that. That being said, PR's welcome!
 
 ## Usage
-*One more time for emphasis, this is only and estimate of expected future cloud costs.*
+**One more time for emphasis, this is only an estimate of expected future cloud costs!**
 ```bash
 terraform plan -out=plan.tfplan > /dev/null && terraform show -json plan.tfplan  | curl -s -X POST -H "Content-Type: application/json" -d @- https://api-dev.pricing.tf/estimate
 ```
