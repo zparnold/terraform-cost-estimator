@@ -6,7 +6,7 @@ based on "Pay-as-you-Go" pricing. The point is only so you have a ballpark, not 
 ## Usage
 *One more time for emphasis, this is only and estimate of expected future cloud costs.*
 ```bash
-terraform plan -out=plan.tfplan > /dev/null && terraform show -json plan.tfplan  | curl -s -X POST -H "Content-Type: application/json" -d @- https://api.pricing.tf/estimate
+terraform plan -out=plan.tfplan > /dev/null && terraform show -json plan.tfplan  | curl -s -X POST -H "Content-Type: application/json" -d @- https://api-dev.pricing.tf/estimate
 ```
 ### Response
 ```json
