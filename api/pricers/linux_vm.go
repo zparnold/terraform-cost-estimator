@@ -3,6 +3,7 @@ package pricers
 import (
 	"fmt"
 	"github.com/zparnold/azure-terraform-cost-estimator/common"
+	"k8s.io/klog"
 	"strings"
 )
 
@@ -16,25 +17,36 @@ type LinuxVM struct {
 
 func (v *LinuxVM) GetHourlyPrice() float64 {
 	unitPrice := 0.0
-	vms := common.GetItemIfExists(v.GetArn())
-	if vms == nil {
+	vms, err := common.ExecuteAzurePriceQuery(v)
+	if err != nil {
+		klog.Error(err)
 		return unitPrice
 	}
-	for _, vmPriceItem := range *vms {
-		if v.IsSpotEnabled && strings.Contains(vmPriceItem.SkuName, "Spot") && !(strings.Contains(vmPriceItem.ProductName, "Windows")) {
-			unitPrice = vmPriceItem.UnitPrice
-			break
-		}
-		if v.IsLowPriority && strings.Contains(vmPriceItem.SkuName, "Low Priority") && !(strings.Contains(vmPriceItem.ProductName, "Windows")) {
-			unitPrice = vmPriceItem.UnitPrice
-			break
-		}
-		if !v.IsLowPriority && !v.IsSpotEnabled && !(strings.Contains(vmPriceItem.ProductName, "Windows")) {
-			unitPrice = vmPriceItem.UnitPrice
-			break
-		}
-	}
+	//Assume that the first one is the one we want
+	unitPrice = vms.Items[0].UnitPrice
 	return unitPrice * v.Count
+}
+
+func (v *LinuxVM) GenerateQuery() string {
+	baseQuery := fmt.Sprintf("serviceName eq 'Virtual Machines' and armRegionName eq '%s' and armSkuName eq '%s' and priceType eq 'Consumption' and (contains(productName,'Windows') eq false)", v.Location, v.Size)
+	var skuFilter []string
+	switch {
+	case v.IsSpotEnabled:
+		skuFilter = append(skuFilter, "contains(skuName, 'Spot')")
+		break
+	case v.IsLowPriority:
+		skuFilter = append(skuFilter, "contains(skuName, 'Low Priority')")
+		break
+	default:
+		break
+	}
+	//case where we want to rule out spot and low priority
+	if len(skuFilter) == 0 {
+		baseQuery = baseQuery + " and ((contains(skuName,'Spot') eq false) and (contains(skuName,'Low Priority') eq false))"
+	} else {
+		baseQuery = baseQuery + " and " + strings.Join(skuFilter, " and ")
+	}
+	return baseQuery
 }
 
 func (v *LinuxVM) GetArn() string {
