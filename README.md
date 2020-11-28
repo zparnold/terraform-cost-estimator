@@ -1,10 +1,10 @@
 # Terraform Cost Estimator
 
-Helps to estimate costs of Terraform Plans and right now is focused on the [`azurerm`](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs) 
+Helps you to estimate costs of Terraform Plans and right now is focused on the [`azurerm`](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs) 
 Terraform Provider. _Note these are **estimates only** (not actual costs)
-based on "Pay-as-you-Go" pricing. The point of this API is only so you have a ballpark, not a guarantee of potential future costs._ 
-If you're looking for other pricing schemes, such as "reserved", "DevTest pricing", or if your company has an agreement
-with Azure that gives you a discount off of standard "Pay-as-you-Go" list prices, this will not be reflected here. Hopefully,
+based on "Pay-as-you-Go" pricing. The point of this API is only so you have an estimate, not a guarantee of potential future costs._ 
+If you're looking for other pricing schemes, such as "reserved", "DevTest", or if your company has an agreement
+with a cloud provider that gives you a discount off of standard "Pay-as-you-Go" list prices this will not be reflected here. Hopefully,
 if you are looking for one of these pricing schemes, this API should at least provide you with an upper-bound. However,
 it in no way represents a guarantee of prices between you and your cloud provider.
 
@@ -40,7 +40,7 @@ The response provides:
 _Note: currently "monthly" and "yearly" prices are only calculated as a multiple of hours. 1 Month = 730 Hours and 1 Year = 8760 Hours._
 
 ## Security
-The code is all here and executes in an AWS lambda function, you can read for yourself and see that we're not storing anything
+The code is all here and executes in a serverless function, you can read for yourself and see that we're not storing/logging anything
 you send. :smile:
 
 ## Supported Resources
@@ -52,8 +52,8 @@ you send. :smile:
 
 #### A side note on billable units of measure:
 Not all billable resources in Azure are tied to an hourly price. For example, consider VNETs/egress, StorageAccount Blob Storage consumed size,
-anything tied to API call count like KeyVault. These resources depend on further consumption after provisioning, so they
-are in-effect unestimateable. In theory one could derive an estimate based on average consumption across all Azure usage,
+or anything tied to API call count like KeyVault. These resources depend on further consumption after provisioning, so they
+are in-effect unestimateable from the standpoint of this API. In theory, one could derive an estimate based on average consumption across all Azure usage,
 but I don't work for Microsoft/nor have access to that data. So, they will probably remain unestimated unless you have a 
 good idea and want to contribute!
 
@@ -64,8 +64,8 @@ good idea and want to contribute!
 
 ## Adding Resources to Price
 The `api/pricers/` folder is where a collection of interfaces of type `Pricer` are implemented. The only function necessary to
-implement this interface is `GetHourlyPrice()` which returns. Should you want to use the existing price database (Dynamo)
-take a look at the resource enumeration section below. There is also a prices.csv that should give you a full list of 
+implement this interface is `GetHourlyPrice()` which returns a `float64`. Should you want to use the existing price database (Dynamo)
+take a look at the resource enumeration section below. There is also a `prices.csv` that should give you a full list of 
 priceable objects in Azure returned by their public API here: https://docs.microsoft.com/en-us/rest/api/cost-management/retail-prices/azure-retail-prices
 
 To add another resource to be priced:
@@ -74,7 +74,7 @@ To add another resource to be priced:
 * Implement the function from above
 * Add a `case` statement in the `api/main.go` which binds the terraform resource name to the pricer (copy one from the method.)
 
-## Design
+## Runtime Cloud Design
 ![Terraform Cost Estimation Architecture Diagram](./assets/Terraform%20Cost%20Estimator%20Design.png)
 
 ## Resource Enumeration
