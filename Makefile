@@ -1,4 +1,4 @@
-.PHONY: build clean deploy
+.PHONY: build clean deploy test
 
 build:
 	env GOOS=linux go build -ldflags="-s -w" -o bin/api api/main.go
@@ -9,3 +9,6 @@ clean:
 
 deploy: clean build
 	sls deploy --verbose
+
+test: clean
+	go test
