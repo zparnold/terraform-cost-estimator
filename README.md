@@ -39,6 +39,13 @@ you send. :smile:
 |[x]|`azurerm_windows_virtual_machine`|
 |[x]|`azurerm_kubernetes_cluster`|
 
+#### A side note on billable units of measure:
+Not all billable resources in Azure are tied to an hourly price. For example, consider VNETs/egress, StorageAccount Blob Storage consumed size,
+anything tied to API call count like KeyVault. These resources depend on further consumption after provisioning, so they
+are in-effect unestimateable. In theory one could derive an estimate based on average consumption across all Azure usage,
+but I don't work for Microsoft/nor have access to that data. So, they will probably remain unestimated unless you have a 
+good idea and want to contribute!
+
 ## To Dev
 * Ensure that go >= 1.13 and `serverless` 2.x is installed on your machine
 * Make a PR (add a test too)
