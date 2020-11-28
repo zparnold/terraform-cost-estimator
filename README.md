@@ -9,7 +9,7 @@ if you are looking for one of these pricing schemes, this API should at least pr
 it in no way represents a guarantee of prices between you and your cloud provider.
 
 ### Can I use this for more cloud providers than Azure?
-It is definitely designed to provide this functionality, but at present since I work at a company that uses Azure, so I'm
+It is definitely designed to provide this functionality, but at present since I work at a company that uses Azure I'm
 focused on that. That being said, PR's welcome!
 
 ## Usage
