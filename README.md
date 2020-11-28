@@ -75,4 +75,4 @@ Each portion (like an ARN) is separated with a colon
 If this still does not uniquely identify a billable asset (because it has multiple variants such as Windows/Spot/Low Priority)
 then the document associated with this row in Dynamo will have more than one price item in it. In this case it is the
 responsibility of the instance of the `Pricer` interface to implement the logic which will further reduce the option to 
-one item.
+one item. See an example `api/pricers/windows_vm.go`
