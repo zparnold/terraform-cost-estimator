@@ -5,9 +5,9 @@ import "time"
 type ApiResp struct {
 	//Future Work
 	//PriceItems []ApiRespPriceItem `json:"price_items"`
-	UnsupportedResources []string `json:"unsupported_resources,omitempty"`
-	UnestimateableResources []string `json:"unestimateable_resources,omitempty"`
-	TotalEstimate EstimateTotal `json:"estimate_summary"`
+	UnsupportedResources    []string      `json:"unsupported_resources,omitempty"`
+	UnestimateableResources []string      `json:"unestimateable_resources,omitempty"`
+	TotalEstimate           EstimateTotal `json:"estimate_summary"`
 }
 type EstimateTotal struct {
 	HourlyCost  float64 `json:"hourly_cost_usd"`
@@ -32,7 +32,7 @@ type ResourceChange struct {
 	Type     string `json:"type"`
 	Provider string `json:"provider_name"`
 	Change   Change `json:"change"`
-	Address string `json:"address"`
+	Address  string `json:"address"`
 }
 
 type Change struct {
@@ -44,7 +44,7 @@ type AzurePricingApiResp struct {
 	CustomerEntityID   string                `json:"CustomerEntityId"`
 	CustomerEntityType string                `json:"CustomerEntityType"`
 	Items              []AzurePricingApiItem `json:"Items"`
-	NextPageLink       *string                `json:"NextPageLink"`
+	NextPageLink       *string               `json:"NextPageLink"`
 	Count              int                   `json:"Count"`
 }
 
@@ -70,4 +70,3 @@ type AzurePricingApiItem struct {
 	IsPrimaryMeterRegion bool      `json:"isPrimaryMeterRegion"`
 	ArmSkuName           string    `json:"armSkuName"`
 }
-

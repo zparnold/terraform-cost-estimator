@@ -51,7 +51,7 @@ func (v *VirtualMachine) GetHourlyPrice(ctx context.Context) float64 {
 		return unitPrice
 	}
 	//Assume that the first one is the one we want
-	if len(vms.Items) > 0{
+	if len(vms.Items) > 0 {
 		unitPrice = vms.Items[0].UnitPrice
 	}
 	return unitPrice * v.Count

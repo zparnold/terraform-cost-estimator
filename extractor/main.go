@@ -127,7 +127,6 @@ func DumpPricesToDynamo(ctx context.Context, priceData *[]common.AzurePricingApi
 	return nil
 }
 
-
 func main() {
 	//lambda.Start(Handler)
 	Handler(context.Background())
@@ -145,7 +144,7 @@ func mergePriceItems(srcItem common.AzurePricingApiItem, destItems []common.Azur
 				break
 			}
 		}
-		if !seenFlag{
+		if !seenFlag {
 			destItems = append(destItems, srcItem)
 		}
 		return destItems
@@ -154,5 +153,3 @@ func mergePriceItems(srcItem common.AzurePricingApiItem, destItems []common.Azur
 		return []common.AzurePricingApiItem{srcItem}
 	}
 }
-
-

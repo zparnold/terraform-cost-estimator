@@ -19,7 +19,7 @@ const (
 func ExecuteAzurePriceQuery(ctx context.Context, p AzurePriceableAsset) (*AzurePricingApiResp, error) {
 	httpClient := xray.Client(http.DefaultClient)
 	safeQuery := url.QueryEscape(p.GenerateQuery(ctx))
-	resp, err := ctxhttp.Get(ctx, httpClient ,fmt.Sprintf("%s%s", API_URL, safeQuery))
+	resp, err := ctxhttp.Get(ctx, httpClient, fmt.Sprintf("%s%s", API_URL, safeQuery))
 	if err != nil {
 		return &AzurePricingApiResp{}, err
 	}
