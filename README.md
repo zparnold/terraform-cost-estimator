@@ -57,6 +57,14 @@ you send. :smile:
 |[x]|`azurerm_windows_virutal_machine_scale_set`|Compute|
 |[x]|`azurerm_kubernetes_cluster`|Containers|
 
+## Unestimateable Resources
+||Resource Name|Area|
+|---|---|---|
+|[x]|`azurerm_resource_group`|Management|
+|[x]|`azurerm_virtual_network`|Networking|
+|[x]|`azurerm_subnet`|Networking|
+|[x]|`azurerm_network_interface`|Networking|
+
 #### A side note on billable units of measure:
 Not all billable resources in Azure are tied to an hourly price. For example, consider VNETs/egress, StorageAccount Blob Storage consumed size,
 or anything tied to API call count like KeyVault. These resources depend on further consumption after provisioning, so they
@@ -80,9 +88,6 @@ To add another resource to be priced:
 * Add a new file, preferably in the `api/pricers/` folder using a name that would help others understand it
 * Implement the function from above
 * Add a `case` statement in the `api/main.go` which binds the terraform resource name to the pricer (copy one from the method.)
-
-## Runtime Cloud Design
-![Terraform Cost Estimation Architecture Diagram](./assets/Terraform%20Cost%20Estimator%20Design.png)
 
 ## Resource Enumeration
 I came up with an ARN-like syntax to uniquely identify product family/sku combinations for pricing, this was for two reasons:

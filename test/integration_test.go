@@ -125,3 +125,16 @@ func TestLinuxVmss(t *testing.T) {
 	expectedPrice := 0.114
 	assert.Equal(t, expectedPrice, resp.TotalEstimate.HourlyCost)
 }
+func TestManagedDisk(t *testing.T) {
+
+	jsonPlan := terraform.InitAndPlanAndShow(t, &terraform.Options{
+		TerraformDir: "./disk/",
+		PlanFilePath: "./tfplan.out",
+	})
+	resp, err := ExecutePricingOp(jsonPlan)
+	if err != nil {
+		t.Error(err)
+	}
+	expectedPrice := 0.022468000000000002
+	assert.Equal(t, expectedPrice, resp.TotalEstimate.HourlyCost)
+}

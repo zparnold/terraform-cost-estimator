@@ -3,14 +3,16 @@ provider "azurerm" {
   version = "=2.37.0"
 }
 
-terraform {
-  required_version = "0.13.0"
+resource "azurerm_resource_group" "a" {
+  location = "West US 2"
+  name = "a"
 }
 
 resource "azurerm_managed_disk" "main" {
-  create_option = ""
-  location = ""
-  name = ""
-  resource_group_name = ""
-  storage_account_type = ""
+  create_option = "Empty"
+  location = azurerm_resource_group.a.location
+  name = "a"
+  resource_group_name = azurerm_resource_group.a.name
+  storage_account_type = "UltraSSD_LRS"
+  disk_size_gb = 137
 }
