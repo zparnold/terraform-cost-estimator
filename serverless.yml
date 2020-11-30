@@ -8,8 +8,8 @@ provider:
     lambda: true
 
 # you can overwrite defaults here
-  stage: dev
-  region: us-east-2
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-2'}
   timeout: 600
 
   iamRoleStatements:
@@ -61,10 +61,6 @@ package:
     - ./bin/**
 
 functions:
-  extractor:
-    handler: bin/extractor
-    events:
-      - schedule: rate(30 days)
   api:
     handler: bin/api
     events:

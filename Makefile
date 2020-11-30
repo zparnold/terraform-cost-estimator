@@ -8,7 +8,10 @@ clean:
 	rm -rf ./bin
 
 deploy: clean build
-	sls deploy --verbose
+	sls deploy --verbose --stage prod --region us-east-2
+
+deploy-dev: clean build
+	sls deploy --verbose --stage dev --region us-east-2
 
 test: clean
 	go test
