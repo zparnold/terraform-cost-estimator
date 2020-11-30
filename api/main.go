@@ -27,12 +27,13 @@ type Response events.APIGatewayProxyResponse
 // Handler is our lambda handler invoked by the `lambda.Start` function call
 func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (apiResp Response, err error) {
 	//Ensure that we capture and properly handle any panic()'s in the API
-	//defer func() {
-	//	if r := recover(); r != nil {
-	//		apiResp = generateErrorResp(ctx,500, "Internal Server Error", fmt.Sprintf("%v", err))
-	//		err = nil
-	//	}
-	//}()
+	defer func() {
+		if r := recover(); r != nil {
+			apiResp = generateErrorResp(ctx,500, "Internal Server Error", fmt.Sprintf("%v", err))
+			err = nil
+		}
+	}()
+	//request.RequestContext.Identity.SourceIP
 	var r common.ApiResp
 	price, unsupportedResources, unestimateableResources, err := PricePlanFile(ctx, request.Body)
 	if err != nil {

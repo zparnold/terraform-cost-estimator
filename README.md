@@ -52,7 +52,7 @@ you send. :smile:
 |[x]|`azurerm_linux_virtual_machine`|Compute|
 |[x]|`azurerm_windows_virtual_machine`|Compute|
 |[x]|`azurerm_virutal_machine`|Compute|
-|[x]|`azurerm_virutal_machine_scaleset`|Compute|
+|[x]|`azurerm_virutal_machine_scale_set`|Compute|
 |[x]|`azurerm_linux_virutal_machine_scale_set`|Compute|
 |[x]|`azurerm_windows_virutal_machine_scale_set`|Compute|
 |[x]|`azurerm_kubernetes_cluster`|Containers|
@@ -111,4 +111,4 @@ one item. See an example `api/pricers/windows_vm.go`
 |[x]|Basic compute resources supported|
 ||Basic storage resources supported|
 ||Estimateable networking resources supported|
-||Some PaaS or SaaS resources supported maybe?|
+||Some PaaS or SaaS resources supported maybe? (Azure App Services, Redis, Azure Functions, AKS, ACI)|
