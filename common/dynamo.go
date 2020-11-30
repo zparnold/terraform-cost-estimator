@@ -1,6 +1,5 @@
 package common
 
-
 import (
 	"context"
 	"encoding/json"
@@ -100,7 +99,7 @@ func GetItemIfExists(ctx context.Context, id string) *[]AzurePricingApiItem {
 			return nil
 		}
 	}
-	if result.Item == nil{
+	if result.Item == nil {
 		return nil
 	}
 	var items []AzurePricingApiItem
