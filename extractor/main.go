@@ -53,10 +53,10 @@ func Handler(ctx context.Context) error {
 		}
 		mergedItemList = append(mergedItemList, azurePricingResp.Items...)
 	}
-	return DumpPricesToDynamo(&mergedItemList)
+	return DumpPricesToDynamo(ctx, &mergedItemList)
 }
 
-func payloadToS3(items *[]common.AzurePricingApiItem) error {
+func payloadToS3(ctx context.Context, items *[]common.AzurePricingApiItem) error {
 	sess := session.Must(session.NewSession(&aws.Config{Region: aws.String(os.Getenv("AWS_REGION"))}))
 	b, err := json.Marshal(*items)
 	if err != nil {
@@ -86,7 +86,7 @@ func writeToCSV(items *[]common.AzurePricingApiItem)  {
 	_ = ioutil.WriteFile("prices.csv", buff.Bytes(), 0644)
 }
 */
-func DumpPricesToDynamo(priceData *[]common.AzurePricingApiItem) error {
+func DumpPricesToDynamo(ctx context.Context, priceData *[]common.AzurePricingApiItem) error {
 
 	/*
 		This has to be a really ugly for loop because we want to combine like entries, it still runs in O(n) time since its
@@ -98,12 +98,12 @@ func DumpPricesToDynamo(priceData *[]common.AzurePricingApiItem) error {
 		if item.Type == "Consumption" {
 			id := common.GetArnForAzureApiItem(&item)
 			klog.Infoln("Processing: ", id)
-			dynamoItems := common.GetItemIfExists(id)
+			dynamoItems := common.GetItemIfExists(nil, id)
 			//Record doesn't exist
 			if dynamoItems == nil {
 				var putItems []common.AzurePricingApiItem
 				putItems = mergePriceItems(item, putItems)
-				err := common.PutPriceItemsWithId(id, &putItems)
+				err := common.PutPriceItemsWithId(ctx, id, &putItems)
 				if err != nil {
 					klog.Error(err)
 					errFlag = true
@@ -111,7 +111,7 @@ func DumpPricesToDynamo(priceData *[]common.AzurePricingApiItem) error {
 			} else {
 				//Merge items and then put them back
 				*dynamoItems = mergePriceItems(item, *dynamoItems)
-				err := common.PutPriceItemsWithId(id, dynamoItems)
+				err := common.PutPriceItemsWithId(ctx, id, dynamoItems)
 				if err != nil {
 					klog.Error(id, err)
 					errFlag = true

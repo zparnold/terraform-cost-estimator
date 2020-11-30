@@ -2,17 +2,20 @@ package common
 
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-xray-sdk-go/xray"
 	"k8s.io/klog/v2"
 	"os"
 )
 
-func PutPriceItemsWithId(id string, items *[]AzurePricingApiItem) error {
+func PutPriceItemsWithId(ctx context.Context, id string, items *[]AzurePricingApiItem) error {
 	svc := dynamodb.New(session.Must(session.NewSession(&aws.Config{Region: aws.String(os.Getenv("AWS_REGION"))})))
+	xray.AWS(svc.Client)
 	jsonBlob, err := json.Marshal(*items)
 	if err != nil {
 		klog.Error(err)
@@ -30,7 +33,7 @@ func PutPriceItemsWithId(id string, items *[]AzurePricingApiItem) error {
 		TableName: aws.String(os.Getenv("DYNAMO_TABLE")),
 	}
 
-	_, err = svc.PutItem(input)
+	_, err = svc.PutItemWithContext(ctx, input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {
@@ -62,8 +65,9 @@ func PutPriceItemsWithId(id string, items *[]AzurePricingApiItem) error {
 	return nil
 }
 
-func GetItemIfExists(id string) *[]AzurePricingApiItem {
+func GetItemIfExists(ctx context.Context, id string) *[]AzurePricingApiItem {
 	svc := dynamodb.New(session.Must(session.NewSession(&aws.Config{Region: aws.String(os.Getenv("AWS_REGION"))})))
+	xray.AWS(svc.Client)
 	input := &dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {
@@ -73,7 +77,7 @@ func GetItemIfExists(id string) *[]AzurePricingApiItem {
 		TableName: aws.String(os.Getenv("DYNAMO_TABLE")),
 	}
 
-	result, err := svc.GetItem(input)
+	result, err := svc.GetItemWithContext(ctx, input)
 	if err != nil {
 		if aerr, ok := err.(awserr.Error); ok {
 			switch aerr.Code() {

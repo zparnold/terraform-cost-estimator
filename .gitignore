@@ -20,3 +20,5 @@ bin
 .terraform
 test/ignore.txt
 *.tfplan
+tool.py
+venv

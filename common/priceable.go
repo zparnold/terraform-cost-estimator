@@ -1,9 +1,11 @@
 package common
 
+import "context"
+
 /*
 An interface that allows for different ways of fetching a price as long as it represents an estimated hourly cost for
 this resource.
 */
-type Pricer interface {
-	GetHourlyPrice() float64
+type Priceable interface {
+	GetHourlyPrice(ctx context.Context) float64
 }

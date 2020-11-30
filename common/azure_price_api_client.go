@@ -1,8 +1,11 @@
 package common
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/aws/aws-xray-sdk-go/xray"
+	"golang.org/x/net/context/ctxhttp"
 	"io/ioutil"
 	"k8s.io/klog"
 	"net/http"
@@ -13,9 +16,10 @@ const (
 	API_URL = "https://prices.azure.com/api/retail/prices?$filter="
 )
 
-func ExecuteAzurePriceQuery(p AzurePriceableAsset) (*AzurePricingApiResp, error) {
-	safeQuery := url.QueryEscape(p.GenerateQuery())
-	resp, err := http.Get(fmt.Sprintf("%s%s", API_URL, safeQuery))
+func ExecuteAzurePriceQuery(ctx context.Context, p AzurePriceableAsset) (*AzurePricingApiResp, error) {
+	httpClient := xray.Client(http.DefaultClient)
+	safeQuery := url.QueryEscape(p.GenerateQuery(ctx))
+	resp, err := ctxhttp.Get(ctx, httpClient ,fmt.Sprintf("%s%s", API_URL, safeQuery))
 	if err != nil {
 		return &AzurePricingApiResp{}, err
 	}

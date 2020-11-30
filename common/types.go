@@ -6,6 +6,7 @@ type ApiResp struct {
 	//Future Work
 	//PriceItems []ApiRespPriceItem `json:"price_items"`
 	UnsupportedResources []string `json:"unsupported_resources,omitempty"`
+	UnestimateableResources []string `json:"unestimateable_resources,omitempty"`
 	TotalEstimate EstimateTotal `json:"estimate_summary"`
 }
 type EstimateTotal struct {

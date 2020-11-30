@@ -34,6 +34,7 @@ func ExecutePricingOp(jsonPlan string) (*common.ApiResp, error) {
 }
 
 func TestLinuxVm(t *testing.T) {
+
 	jsonPlan := terraform.InitAndPlanAndShow(t, &terraform.Options{
 		TerraformDir: "./linuxvmtest/",
 		PlanFilePath: "./tfplan.out",
@@ -45,6 +46,7 @@ func TestLinuxVm(t *testing.T) {
 	assert.Equal(t, 0.114, resp.TotalEstimate.HourlyCost)
 }
 func TestWindowsVmWithLicenseCost(t *testing.T) {
+
 	jsonPlan := terraform.InitAndPlanAndShow(t, &terraform.Options{
 		TerraformDir: "./windowsvmtest/",
 		PlanFilePath: "./tfplan.out",
@@ -57,6 +59,7 @@ func TestWindowsVmWithLicenseCost(t *testing.T) {
 }
 
 func TestAksClusterWith5Nodes(t *testing.T) {
+
 	jsonPlan := terraform.InitAndPlanAndShow(t, &terraform.Options{
 		TerraformDir: "./aks/",
 		PlanFilePath: "./tfplan.out",
@@ -66,5 +69,59 @@ func TestAksClusterWith5Nodes(t *testing.T) {
 		t.Error(err)
 	}
 	expectedPrice := (0.136 * 5) + 0.10 // aks control plane paid sku
+	assert.Equal(t, expectedPrice, resp.TotalEstimate.HourlyCost)
+}
+
+func TestVmss(t *testing.T) {
+
+	jsonPlan := terraform.InitAndPlanAndShow(t, &terraform.Options{
+		TerraformDir: "./vmss/",
+		PlanFilePath: "./tfplan.out",
+	})
+	resp, err := ExecutePricingOp(jsonPlan)
+	if err != nil {
+		t.Error(err)
+	}
+	expectedPrice := (0.099 * 2)
+	assert.Equal(t, expectedPrice, resp.TotalEstimate.HourlyCost)
+}
+
+func TestLegacyVmResource(t *testing.T) {
+
+	jsonPlan := terraform.InitAndPlanAndShow(t, &terraform.Options{
+		TerraformDir: "./legacyvm/",
+		PlanFilePath: "./tfplan.out",
+	})
+	resp, err := ExecutePricingOp(jsonPlan)
+	if err != nil {
+		t.Error(err)
+	}
+	expectedPrice := 0.198
+	assert.Equal(t, expectedPrice, resp.TotalEstimate.HourlyCost)
+}
+func TestWindowsVmss(t *testing.T) {
+
+	jsonPlan := terraform.InitAndPlanAndShow(t, &terraform.Options{
+		TerraformDir: "./windows_vmss/",
+		PlanFilePath: "./tfplan.out",
+	})
+	resp, err := ExecutePricingOp(jsonPlan)
+	if err != nil {
+		t.Error(err)
+	}
+	expectedPrice := 0.206
+	assert.Equal(t, expectedPrice, resp.TotalEstimate.HourlyCost)
+}
+func TestLinuxVmss(t *testing.T) {
+
+	jsonPlan := terraform.InitAndPlanAndShow(t, &terraform.Options{
+		TerraformDir: "./linux_vmss/",
+		PlanFilePath: "./tfplan.out",
+	})
+	resp, err := ExecutePricingOp(jsonPlan)
+	if err != nil {
+		t.Error(err)
+	}
+	expectedPrice := 0.114
 	assert.Equal(t, expectedPrice, resp.TotalEstimate.HourlyCost)
 }

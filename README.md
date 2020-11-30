@@ -21,7 +21,9 @@ terraform plan -out=plan.tfplan > /dev/null && terraform show -json plan.tfplan 
 ```json
 {
     "unsupported_resources": [
-        "azurerm_network_interface.example",
+        "azurerm_network_interface.example"
+    ],
+    "unestimateable_resources": [
         "azurerm_resource_group.example",
         "azurerm_subnet.example",
         "azurerm_virtual_network.example"
@@ -36,6 +38,7 @@ terraform plan -out=plan.tfplan > /dev/null && terraform show -json plan.tfplan 
 The response provides:
 * `unsupported_resources` to let you know which resources weren't priced
 * `estimate_summary` which contains the Hourly, Monthly, and Yearly additional cost based on this Terraform plan
+* `unestimateable_resources` to let you know which resources are not currently able to be estimated based on this terraform plan
 
 _Note: currently "monthly" and "yearly" prices are only calculated as a multiple of hours. 1 Month = 730 Hours and 1 Year = 8760 Hours._
 
@@ -44,11 +47,15 @@ The code is all here and executes in a serverless function, you can read for you
 you send. :smile:
 
 ## Supported Resources
-||Resource Name|
-|---|---|
-|[x]|`azurerm_linux_virtual_machine`|
-|[x]|`azurerm_windows_virtual_machine`|
-|[x]|`azurerm_kubernetes_cluster`|
+||Resource Name|Area|
+|---|---|---|
+|[x]|`azurerm_linux_virtual_machine`|Compute|
+|[x]|`azurerm_windows_virtual_machine`|Compute|
+|[x]|`azurerm_virutal_machine`|Compute|
+|[x]|`azurerm_virutal_machine_scaleset`|Compute|
+|[x]|`azurerm_linux_virutal_machine_scale_set`|Compute|
+|[x]|`azurerm_windows_virutal_machine_scale_set`|Compute|
+|[x]|`azurerm_kubernetes_cluster`|Containers|
 
 #### A side note on billable units of measure:
 Not all billable resources in Azure are tied to an hourly price. For example, consider VNETs/egress, StorageAccount Blob Storage consumed size,
@@ -94,3 +101,14 @@ If this still does not uniquely identify a billable asset (because it has multip
 then the document associated with this row in Dynamo will have more than one price item in it. In this case it is the
 responsibility of the instance of the `Pricer` interface to implement the logic which will further reduce the option to 
 one item. See an example `api/pricers/windows_vm.go`
+
+## The path to 1.0 (and prod)
+|Status|Task|
+|---|---|
+|[x]|Integration tests exist|
+||Integration tests in CI pipeline|
+||Automated deployment in CI Pipeline|
+|[x]|Basic compute resources supported|
+||Basic storage resources supported|
+||Estimateable networking resources supported|
+||Some PaaS or SaaS resources supported maybe?|
