@@ -23,7 +23,7 @@ jobs:
       - uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: 0.13.0
-        name: Run Integration Tests
+      - name: Run Integration Tests
         run: go test ./test/ -v
       - name: Deploy Prod Env
         run: make deploy
