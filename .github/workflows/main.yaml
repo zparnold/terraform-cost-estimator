@@ -28,6 +28,8 @@ jobs:
         uses: serverless/github-action@master
         with:
           args: deploy --verbose --stage dev --region us-east-2
+      - name: az login
+        run: az login --service-principal --username ${{ secrets.ARM_CLIENT_ID }} --password ${{ secrets.ARM_CLIENT_SECRET }} --tenant ${{ secrets.ARM_TENANT_ID }}
       - name: Integration Tests
         run:  go test -v ./test/
       - name: serverless deploy

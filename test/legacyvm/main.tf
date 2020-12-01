@@ -3,10 +3,6 @@ provider "azurerm" {
   version = "=2.37.0"
 }
 
-terraform {
-  required_version = "0.13.0"
-}
-
 variable "prefix" {
   default = "tfvmex"
 }
