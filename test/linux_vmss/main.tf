@@ -29,11 +29,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "example" {
   sku                 = "Standard_F2"
   instances           = 1
   admin_username      = "adminuser"
-
-  admin_ssh_key {
-    username   = "adminuser"
-    public_key = file("~/.ssh/id_rsa.pub")
-  }
+  admin_password = "P@ssw0rd12345"
 
   source_image_reference {
     publisher = "Canonical"
