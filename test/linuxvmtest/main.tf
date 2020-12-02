@@ -1,6 +1,7 @@
 provider "azurerm" {
   features {}
   version = "=2.37.0"
+  skip_provider_registration = true
 }
 
 resource "azurerm_resource_group" "example" {

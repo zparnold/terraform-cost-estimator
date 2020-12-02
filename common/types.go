@@ -2,6 +2,11 @@ package common
 
 import "time"
 
+const (
+	YEAR_HOURS  = 8760
+	MONTH_HOURS = 730
+)
+
 type ApiResp struct {
 	//Future Work
 	//PriceItems []ApiRespPriceItem `json:"price_items"`
@@ -59,6 +64,7 @@ type AzurePricingApiItem struct {
 	MeterID              string    `json:"meterId"`
 	MeterName            string    `json:"meterName"`
 	ProductID            string    `json:"productId"`
+	ReservationTerm      string    `json:"reservationTerm"`
 	SkuID                string    `json:"skuId"`
 	ProductName          string    `json:"productName"`
 	SkuName              string    `json:"skuName"`
