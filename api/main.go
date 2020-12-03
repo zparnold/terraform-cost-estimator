@@ -30,12 +30,12 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (apiRes
 
 	//request.RequestContext.Identity.SourceIP
 
-	// Since 'Consumption' is listed as the first item in the PriceType const, if a match is not found, Consumption is the default
-	priceType := azure.PricingSchemeLookup[request.QueryStringParameters["priceType"]]
+	// Since 'Consumption' is listed as the first item in the PricingScheme const, if a match is not found, Consumption is the default
+	pricingScheme := azure.PricingSchemeLookup[request.QueryStringParameters["pricingScheme"]]
 
 	var r common.ApiResp
 	// TODO: This is hard-coded to the Azure Pricer.  This could be enhanced to dynamically pick the cloud provider (AWS, Azure, GWC)
-	price, unsupportedResources, unestimateableResources, err := azure.PricePlanFile(ctx, request.Body, priceType)
+	price, unsupportedResources, unestimateableResources, err := azure.PricePlanFile(ctx, request.Body, pricingScheme)
 	if err != nil {
 		apiResp = generateErrorResp(ctx, 500, "Internal Server Error", fmt.Sprintf("%v", err))
 		err = nil

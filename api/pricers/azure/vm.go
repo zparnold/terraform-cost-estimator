@@ -9,16 +9,16 @@ import (
 	"strings"
 )
 
-type PriceType int
+type PricingScheme int
 
 const (
-	Consumption PriceType = iota
+	Consumption PricingScheme = iota
 	DevTestConsumption
 	Reservation1Yr
 	Reservation3Yr
 )
 
-var PricingSchemeLookup = map[string]PriceType{
+var PricingSchemeLookup = map[string]PricingScheme{
 	"consumption":    Consumption,
 	"reservation1yr": Reservation1Yr,
 	"reservation3yr": Reservation3Yr,
@@ -31,7 +31,7 @@ type VirtualMachine struct {
 	Count         float64
 	IsSpotEnabled bool
 	IsLowPriority bool
-	PriceType     PriceType
+	PricingScheme PricingScheme
 }
 
 func (v *VirtualMachine) GenerateQuery(context.Context) string {
@@ -58,9 +58,9 @@ func (v *VirtualMachine) GenerateQuery(context.Context) string {
 
 	if useReservationBilling(*v) {
 		skuFilter = append(skuFilter, "priceType eq 'Reservation'")
-	} else if v.PriceType == Consumption {
+	} else if v.PricingScheme == Consumption {
 		skuFilter = append(skuFilter, "priceType eq 'Consumption'")
-	} else if v.PriceType == DevTestConsumption {
+	} else if v.PricingScheme == DevTestConsumption {
 		skuFilter = append(skuFilter, "priceType eq 'DevTestConsumption'")
 	}
 
@@ -82,17 +82,17 @@ func (v *VirtualMachine) GetHourlyPrice(ctx context.Context) float64 {
 		if useReservationBilling(*v) {
 			for _, item := range vms.Items {
 				//we can't filter on 'reservationTerm' in the ODATA query, so we need to do it here
-				if item.ReservationTerm == "1 Year" && v.PriceType == Reservation1Yr {
+				if item.ReservationTerm == "1 Year" && v.PricingScheme == Reservation1Yr {
 					unitPrice = item.UnitPrice / common.YEAR_HOURS
 					break
-				} else if item.ReservationTerm == "3 Years" && v.PriceType == Reservation3Yr {
+				} else if item.ReservationTerm == "3 Years" && v.PricingScheme == Reservation3Yr {
 					unitPrice = item.UnitPrice / (3.0 * common.YEAR_HOURS)
 					break
 				}
 			}
 			if unitPrice == 0.0 {
 				//We couldn't find a match.  Do we need to return this error or simply log it
-				err = errors.New(fmt.Sprintf("Could not find an item with reservation duration %d", v.PriceType))
+				err = errors.New(fmt.Sprintf("Could not find an item with reservation duration %d", v.PricingScheme))
 				klog.Error(err)
 
 			}
@@ -105,7 +105,7 @@ func (v *VirtualMachine) GetHourlyPrice(ctx context.Context) float64 {
 }
 
 func useReservationBilling(v VirtualMachine) bool {
-	if v.PriceType == Reservation1Yr || v.PriceType == Reservation3Yr {
+	if v.PricingScheme == Reservation1Yr || v.PricingScheme == Reservation3Yr {
 		return true
 	}
 	return false

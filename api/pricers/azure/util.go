@@ -14,7 +14,7 @@ import (
 // https://serverless.com/framework/docs/providers/aws/events/apigateway/#lambda-proxy-integration
 type Response events.APIGatewayProxyResponse
 
-func PricePlanFile(ctx context.Context, jsonBlob string, priceType PriceType) (float64, []string, []string, error) {
+func PricePlanFile(ctx context.Context, jsonBlob string, priceType PricingScheme) (float64, []string, []string, error) {
 	var unsupportedResources []string
 	var unestimateableResources []string
 	var pf common.PlanFile
@@ -38,7 +38,7 @@ func PricePlanFile(ctx context.Context, jsonBlob string, priceType PriceType) (f
 					Count:         1.0,
 					IsSpotEnabled: change.Change.After.(map[string]interface{})["priority"].(string) == "Spot",
 					IsWindows:     false,
-					PriceType: priceType,
+					PricingScheme: priceType,
 				})
 			case "azurerm_windows_virtual_machine":
 				resources = append(resources, &VirtualMachine{
@@ -47,7 +47,7 @@ func PricePlanFile(ctx context.Context, jsonBlob string, priceType PriceType) (f
 					Count:         1.0,
 					IsSpotEnabled: change.Change.After.(map[string]interface{})["priority"].(string) == "Spot",
 					IsWindows:     true,
-					PriceType: priceType,
+					PricingScheme: priceType,
 				})
 			case "azurerm_kubernetes_cluster":
 				resources = append(resources, &AksCluster{
