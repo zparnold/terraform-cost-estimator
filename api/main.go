@@ -31,7 +31,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (apiRes
 	//request.RequestContext.Identity.SourceIP
 
 	// Since 'Consumption' is listed as the first item in the PriceType const, if a match is not found, Consumption is the default
-	priceType := azure.PriceTypeLookup[request.QueryStringParameters["priceType"]]
+	priceType := azure.PricingSchemeLookup[request.QueryStringParameters["priceType"]]
 
 	var r common.ApiResp
 	// TODO: This is hard-coded to the Azure Pricer.  This could be enhanced to dynamically pick the cloud provider (AWS, Azure, GWC)

@@ -18,7 +18,7 @@ const (
 	Reservation3Yr
 )
 
-var PriceTypeLookup = map[string]PriceType{
+var PricingSchemeLookup = map[string]PriceType{
 	"consumption":    Consumption,
 	"reservation1yr": Reservation1Yr,
 	"reservation3yr": Reservation3Yr,
