@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
-	"github.com/zparnold/azure-terraform-cost-estimator/common"
+	"github.com/zparnold/azure-terraform-cost-estimator/common/types"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -15,13 +15,13 @@ const (
 	REST_ENDPOINT = "https://api-dev.pricing.tf/estimate"
 )
 
-func ExecutePricingOp(jsonPlan string) (*common.ApiResp, error) {
+func ExecutePricingOp(jsonPlan string) (*types.ApiResp, error) {
 	//runs on existing json serialized plan, so no need to marshal into json
 	response, err := http.Post(REST_ENDPOINT, "application/json", bytes.NewBufferString(jsonPlan))
 	if err != nil || response.StatusCode != 200 {
 		return nil, err
 	}
-	var responseObj common.ApiResp
+	var responseObj types.ApiResp
 	respBody, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return nil, err
