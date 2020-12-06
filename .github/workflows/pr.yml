@@ -64,6 +64,7 @@ jobs:
       uses: github/codeql-action/analyze@v1
   unit:
     name: Unit Test
+    runs-on: ubuntu-latest
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
@@ -73,6 +74,7 @@ jobs:
         run: go test -v ./test/unit_test.go
   lint:
     name: Lint
+    runs-on: ubuntu-latest
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
@@ -81,7 +83,8 @@ jobs:
       - name: Lint
         run: gofmt -d .
   build:
-    name: Lint
+    name: Build
+    runs-on: ubuntu-latest
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
