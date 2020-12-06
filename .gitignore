@@ -22,3 +22,4 @@ test/ignore.txt
 *.tfplan
 tool.py
 venv
+*.json
