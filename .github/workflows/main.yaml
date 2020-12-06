@@ -54,6 +54,8 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.13.x
+      - name: Build Functions
+        run: make build
       - name: serverless deploy
         uses: serverless/github-action@master
         with:
