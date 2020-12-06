@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 	"fmt"
-	"github.com/zparnold/azure-terraform-cost-estimator/common"
+	"github.com/zparnold/azure-terraform-cost-estimator/common/types"
 	"k8s.io/klog/v2"
 	"strings"
 )
@@ -39,7 +39,7 @@ func (v *AzureDisk) GenerateQuery(context.Context) string {
 
 func (v *AzureDisk) GetHourlyPrice(ctx context.Context) float64 {
 	unitPrice := 0.0
-	disks, err := common.ExecuteAzurePriceQuery(ctx, v)
+	disks, err := types.ExecuteAzurePriceQuery(ctx, v)
 	if err != nil {
 		klog.Error(err)
 		return unitPrice

@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/zparnold/azure-terraform-cost-estimator/common"
+	"github.com/zparnold/azure-terraform-cost-estimator/common/types"
 	"k8s.io/klog"
 )
 
@@ -17,14 +17,14 @@ type Response events.APIGatewayProxyResponse
 func PricePlanFile(ctx context.Context, jsonBlob string, priceType PricingScheme) (float64, []string, []string, error) {
 	var unsupportedResources []string
 	var unestimateableResources []string
-	var pf common.PlanFile
+	var pf types.PlanFile
 	err := json.Unmarshal([]byte(jsonBlob), &pf)
 	if err != nil {
 		klog.Error(err)
 		return 0.0, []string{}, []string{}, err
 	}
 	var hourlyPrice float64
-	var resources []common.Priceable
+	var resources []types.Priceable
 
 	for _, change := range pf.ResourceChanges {
 		//we only want to price Azure API changes

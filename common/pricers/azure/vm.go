@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/zparnold/azure-terraform-cost-estimator/common"
+	"github.com/zparnold/azure-terraform-cost-estimator/common/types"
 	"k8s.io/klog/v2"
 	"strings"
 )
@@ -71,7 +71,7 @@ func (v *VirtualMachine) GenerateQuery(context.Context) string {
 
 func (v *VirtualMachine) GetHourlyPrice(ctx context.Context) float64 {
 	unitPrice := 0.0
-	vms, err := common.ExecuteAzurePriceQuery(ctx, v)
+	vms, err := types.ExecuteAzurePriceQuery(ctx, v)
 	if err != nil {
 		klog.Error(err)
 		return unitPrice
@@ -83,10 +83,10 @@ func (v *VirtualMachine) GetHourlyPrice(ctx context.Context) float64 {
 			for _, item := range vms.Items {
 				//we can't filter on 'reservationTerm' in the ODATA query, so we need to do it here
 				if item.ReservationTerm == "1 Year" && v.PricingScheme == Reservation1Yr {
-					unitPrice = item.UnitPrice / common.YEAR_HOURS
+					unitPrice = item.UnitPrice / types.YEAR_HOURS
 					break
 				} else if item.ReservationTerm == "3 Years" && v.PricingScheme == Reservation3Yr {
-					unitPrice = item.UnitPrice / (3.0 * common.YEAR_HOURS)
+					unitPrice = item.UnitPrice / (3.0 * types.YEAR_HOURS)
 					break
 				}
 			}
