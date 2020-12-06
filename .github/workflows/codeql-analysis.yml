@@ -9,7 +9,7 @@
 # the `language` matrix defined below to confirm you have the correct set of
 # supported CodeQL languages.
 #
-name: "CodeQL"
+name: "PR Pipeline"
 
 on:
   push:
@@ -29,9 +29,6 @@ jobs:
       fail-fast: false
       matrix:
         language: [ 'go' ]
-        # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python' ]
-        # Learn more:
-        # https://docs.github.com/en/free-pro-team@latest/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#changing-the-languages-that-are-analyzed
 
     steps:
     - name: Checkout repository
@@ -65,3 +62,21 @@ jobs:
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
+  unit:
+    name: Unit Test
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.13.x
+      - name: Run Unit Tests
+        run: go test -v ./test/unit_test.go
+  lint:
+    name: Lint
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.13.x
+      - name: Lint
+        run: gofmt -d .

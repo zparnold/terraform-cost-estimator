@@ -4,8 +4,8 @@ import (
 	"context"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
-	"github.com/zparnold/azure-terraform-cost-estimator/api/pricers/azure"
-	"github.com/zparnold/azure-terraform-cost-estimator/common"
+	"github.com/zparnold/azure-terraform-cost-estimator/common/pricers/azure"
+	"github.com/zparnold/azure-terraform-cost-estimator/common/types"
 	"os"
 	"testing"
 )
@@ -57,11 +57,11 @@ func TestLinuxVmReservation(t *testing.T) {
 	assert.InDelta(t, 0.0565, resp.TotalEstimate.HourlyCost, 0.0001)
 }
 
-func wrapResponse(price float64, unsupportedResources []string, unestimateableResources []string) (common.ApiResp, error) {
-	var r common.ApiResp
+func wrapResponse(price float64, unsupportedResources []string, unestimateableResources []string) (types.ApiResp, error) {
+	var r types.ApiResp
 	r.TotalEstimate.HourlyCost = price
-	r.TotalEstimate.MonthlyCost = price * common.MONTH_HOURS
-	r.TotalEstimate.YearlyCost = price * common.YEAR_HOURS
+	r.TotalEstimate.MonthlyCost = price * types.MONTH_HOURS
+	r.TotalEstimate.YearlyCost = price * types.YEAR_HOURS
 	r.UnsupportedResources = unsupportedResources
 	r.UnestimateableResources = unestimateableResources
 	return r, nil

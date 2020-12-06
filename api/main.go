@@ -8,8 +8,8 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-xray-sdk-go/xray"
 	"github.com/zparnold/azure-terraform-cost-estimator/api/errors"
-	"github.com/zparnold/azure-terraform-cost-estimator/api/pricers/azure"
-	"github.com/zparnold/azure-terraform-cost-estimator/common"
+	"github.com/zparnold/azure-terraform-cost-estimator/common/pricers/azure"
+	"github.com/zparnold/azure-terraform-cost-estimator/common/types"
 )
 
 // Response is of type APIGatewayProxyResponse since we're leveraging the
@@ -33,7 +33,7 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (apiRes
 	// Since 'Consumption' is listed as the first item in the PricingScheme const, if a match is not found, Consumption is the default
 	pricingScheme := azure.PricingSchemeLookup[request.QueryStringParameters["pricingScheme"]]
 
-	var r common.ApiResp
+	var r types.ApiResp
 	// TODO: This is hard-coded to the Azure Pricer.  This could be enhanced to dynamically pick the cloud provider (AWS, Azure, GWC)
 	price, unsupportedResources, unestimateableResources, err := azure.PricePlanFile(ctx, request.Body, pricingScheme)
 	if err != nil {
@@ -42,8 +42,8 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (apiRes
 		return apiResp, nil
 	}
 	r.TotalEstimate.HourlyCost = price
-	r.TotalEstimate.MonthlyCost = price * common.MONTH_HOURS
-	r.TotalEstimate.YearlyCost = price * common.YEAR_HOURS
+	r.TotalEstimate.MonthlyCost = price * types.MONTH_HOURS
+	r.TotalEstimate.YearlyCost = price * types.YEAR_HOURS
 	r.UnsupportedResources = unsupportedResources
 	r.UnestimateableResources = unestimateableResources
 	b, err := json.Marshal(r)
