@@ -8,6 +8,40 @@ import (
 	"strings"
 )
 
+type VirtualMachineAssetPricer struct {
+}
+
+func (ap VirtualMachineAssetPricer) Keys() []string {
+	return []string{
+		"azurerm_windows_virtual_machine",
+		"azurerm_linux_virtual_machine",
+		"azurerm_virtual_machine_scale_set",
+		"azurerm_virtual_machine",
+		"azurerm_windows_virtual_machine_scale_set",
+		"azurerm_linux_virtual_machine_scale_set",
+	}
+}
+
+func (ap VirtualMachineAssetPricer) GeneratePricer(change common.ResourceChange) []common.Priceable {
+	var isWindows bool
+	count := 1.0
+	if len(change.Change.After.(map[string]interface{})["os_profile_windows_config"].([]interface{})) > 0 {
+		isWindows = true
+	}
+	if len(change.Change.After.(map[string]interface{})["instances"].([]interface{})) > 0 {
+		count = change.Change.After.(map[string]interface{})["instances"].(float64)
+	}
+	return []common.Priceable{
+		&VirtualMachine{
+			Size:          change.Change.After.(map[string]interface{})["size"].(string),
+			Location:      change.Change.After.(map[string]interface{})["location"].(string),
+			Count:         count,
+			IsSpotEnabled: change.Change.After.(map[string]interface{})["priority"].(string) == "Spot",
+			IsWindows:     isWindows,
+		},
+	}
+}
+
 type VirtualMachine struct {
 	IsWindows     bool
 	Size          string
