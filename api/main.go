@@ -10,12 +10,6 @@ import (
 	"github.com/zparnold/azure-terraform-cost-estimator/api/errors"
 	"github.com/zparnold/azure-terraform-cost-estimator/api/pricers/azure"
 	"github.com/zparnold/azure-terraform-cost-estimator/common"
-	"k8s.io/klog"
-)
-
-const (
-	YEAR_HOURS  = 8760
-	MONTH_HOURS = 730
 )
 
 // Response is of type APIGatewayProxyResponse since we're leveraging the
@@ -33,17 +27,23 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (apiRes
 			err = nil
 		}
 	}()
+
 	//request.RequestContext.Identity.SourceIP
+
+	// Since 'Consumption' is listed as the first item in the PricingScheme const, if a match is not found, Consumption is the default
+	pricingScheme := azure.PricingSchemeLookup[request.QueryStringParameters["pricingScheme"]]
+
 	var r common.ApiResp
-	price, unsupportedResources, unestimateableResources, err := PricePlanFile(ctx, request.Body)
+	// TODO: This is hard-coded to the Azure Pricer.  This could be enhanced to dynamically pick the cloud provider (AWS, Azure, GWC)
+	price, unsupportedResources, unestimateableResources, err := azure.PricePlanFile(ctx, request.Body, pricingScheme)
 	if err != nil {
 		apiResp = generateErrorResp(ctx, 500, "Internal Server Error", fmt.Sprintf("%v", err))
 		err = nil
 		return apiResp, nil
 	}
 	r.TotalEstimate.HourlyCost = price
-	r.TotalEstimate.MonthlyCost = price * MONTH_HOURS
-	r.TotalEstimate.YearlyCost = price * YEAR_HOURS
+	r.TotalEstimate.MonthlyCost = price * common.MONTH_HOURS
+	r.TotalEstimate.YearlyCost = price * common.YEAR_HOURS
 	r.UnsupportedResources = unsupportedResources
 	r.UnestimateableResources = unestimateableResources
 	b, err := json.Marshal(r)
@@ -62,124 +62,6 @@ func Handler(ctx context.Context, request events.APIGatewayProxyRequest) (apiRes
 	}
 
 	return apiResp, nil
-}
-func PricePlanFile(ctx context.Context, jsonBlob string) (float64, []string, []string, error) {
-	var unsupportedResources []string
-	var unestimateableResources []string
-	var pf common.PlanFile
-	err := json.Unmarshal([]byte(jsonBlob), &pf)
-	if err != nil {
-		klog.Error(err)
-		return 0.0, []string{}, []string{}, err
-	}
-	var hourlyPrice float64
-	var resources []common.Priceable
-
-	for _, change := range pf.ResourceChanges {
-		//we only want to price Azure API changes
-		if change.Provider == "registry.terraform.io/hashicorp/azurerm" {
-			//Until I find a better way we need to explicitly opt-in price types
-			switch change.Type {
-			case "azurerm_linux_virtual_machine":
-				resources = append(resources, &azure.VirtualMachine{
-					Size:          change.Change.After.(map[string]interface{})["size"].(string),
-					Location:      change.Change.After.(map[string]interface{})["location"].(string),
-					Count:         1.0,
-					IsSpotEnabled: change.Change.After.(map[string]interface{})["priority"].(string) == "Spot",
-					IsWindows:     false,
-				})
-			case "azurerm_windows_virtual_machine":
-				resources = append(resources, &azure.VirtualMachine{
-					Size:          change.Change.After.(map[string]interface{})["size"].(string),
-					Location:      change.Change.After.(map[string]interface{})["location"].(string),
-					Count:         1.0,
-					IsSpotEnabled: change.Change.After.(map[string]interface{})["priority"].(string) == "Spot",
-					IsWindows:     true,
-				})
-			case "azurerm_kubernetes_cluster":
-				resources = append(resources, &azure.AksCluster{
-					IsPaid: change.Change.After.(map[string]interface{})["sku_tier"].(string) == "Paid",
-				},
-					&azure.VirtualMachine{
-						Size:      change.Change.After.(map[string]interface{})["default_node_pool"].([]interface{})[0].(map[string]interface{})["vm_size"].(string),
-						Location:  change.Change.After.(map[string]interface{})["location"].(string),
-						Count:     change.Change.After.(map[string]interface{})["default_node_pool"].([]interface{})[0].(map[string]interface{})["node_count"].(float64),
-						IsWindows: false,
-					})
-			//This is where a resource that is unsupported	will fall through
-			case "azurerm_subnet":
-				unestimateableResources = append(unestimateableResources, "azurerm_subnet")
-				break
-			case "azurerm_resource_group":
-				unestimateableResources = append(unestimateableResources, "azurerm_resource_group")
-				break
-			case "azurerm_virtual_network":
-				unestimateableResources = append(unestimateableResources, "azurerm_virtual_network")
-				break
-			case "azurerm_network_interface":
-				unestimateableResources = append(unestimateableResources, "azurerm_network_interface")
-				break
-			case "azurerm_virtual_machine_scale_set":
-				var isWindows bool
-				if len(change.Change.After.(map[string]interface{})["os_profile_windows_config"].([]interface{})) > 0 {
-					isWindows = true
-				}
-				resources = append(resources, &azure.VirtualMachine{
-					IsWindows: isWindows,
-					Count:     change.Change.After.(map[string]interface{})["sku"].([]interface{})[0].(map[string]interface{})["capacity"].(float64),
-					Size:      change.Change.After.(map[string]interface{})["sku"].([]interface{})[0].(map[string]interface{})["name"].(string),
-					Location:  change.Change.After.(map[string]interface{})["location"].(string),
-				})
-				break
-			case "azurerm_virtual_machine":
-				var isWindows bool
-				if len(change.Change.After.(map[string]interface{})["os_profile_windows_config"].([]interface{})) > 0 {
-					isWindows = true
-				}
-				resources = append(resources, &azure.VirtualMachine{
-					IsWindows: isWindows,
-					Count:     1,
-					Size:      change.Change.After.(map[string]interface{})["vm_size"].(string),
-					Location:  change.Change.After.(map[string]interface{})["location"].(string),
-				})
-				break
-			case "azurerm_windows_virtual_machine_scale_set":
-				resources = append(resources, &azure.VirtualMachine{
-					IsWindows: true,
-					Count:     change.Change.After.(map[string]interface{})["instances"].(float64),
-					Size:      change.Change.After.(map[string]interface{})["sku"].(string),
-					Location:  change.Change.After.(map[string]interface{})["location"].(string),
-				})
-				break
-			case "azurerm_linux_virtual_machine_scale_set":
-				resources = append(resources, &azure.VirtualMachine{
-					IsWindows: false,
-					Count:     change.Change.After.(map[string]interface{})["instances"].(float64),
-					Size:      change.Change.After.(map[string]interface{})["sku"].(string),
-					Location:  change.Change.After.(map[string]interface{})["location"].(string),
-					//TODO make helpers to grab a key of desired type from chage struct
-				})
-				break
-			case "azurerm_managed_disk":
-				resources = append(resources, &azure.AzureDisk{
-					Location: change.Change.After.(map[string]interface{})["location"].(string),
-					SizeInGb: change.Change.After.(map[string]interface{})["disk_size_gb"].(float64),
-					SkuTier:  change.Change.After.(map[string]interface{})["storage_account_type"].(string),
-					Count:    1,
-				})
-				break
-			default:
-				unsupportedResources = append(unsupportedResources, change.Address)
-				break
-			}
-		}
-	}
-
-	for _, res := range resources {
-		hourlyPrice += res.GetHourlyPrice(ctx)
-	}
-
-	return hourlyPrice, unsupportedResources, unestimateableResources, nil
 }
 
 func main() {
