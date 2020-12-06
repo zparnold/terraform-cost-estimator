@@ -9,3 +9,8 @@ this resource.
 type Priceable interface {
 	GetHourlyPrice(ctx context.Context) float64
 }
+
+type TerraformPriceableAsset interface {
+	Keys() []string
+	GeneratePricer(change ResourceChange) []Priceable
+}

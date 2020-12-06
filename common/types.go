@@ -1,6 +1,9 @@
 package common
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type ApiResp struct {
 	//Future Work
@@ -69,4 +72,13 @@ type AzurePricingApiItem struct {
 	Type                 string    `json:"type"`
 	IsPrimaryMeterRegion bool      `json:"isPrimaryMeterRegion"`
 	ArmSkuName           string    `json:"armSkuName"`
+}
+
+type UnsupportedResourceError struct {
+	Key string
+	Address string
+}
+
+func (e UnsupportedResourceError) Error() string {
+	return fmt.Sprintf("Resource %s @ %s: unsupported error", e.Key, e.Address)
 }
