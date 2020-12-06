@@ -20,18 +20,13 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      steps:
-      - name: Build Functions
-        run: make build
-      - name: serverless deploy
-        uses: serverless/github-action@master
-        with:
-          args: deploy --verbose --stage dev --region us-east-2
-
-      - name: serverless deploy
-        uses: serverless/github-action@master
-        with:
-          args: deploy --verbose --stage prod --region us-east-2
+    steps:
+    - name: Build Functions
+      run: make build
+    - name: serverless deploy
+      uses: serverless/github-action@master
+      with:
+        args: deploy --verbose --stage dev --region us-east-2
   intg-test:
     name: Integration Testing
     runs-on: ubuntu-latest
@@ -53,8 +48,8 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      steps:
-        - name: serverless deploy
-          uses: serverless/github-action@master
-          with:
-            args: deploy --verbose --stage prod --region us-east-2
+    steps:
+      - name: serverless deploy
+        uses: serverless/github-action@master
+        with:
+          args: deploy --verbose --stage prod --region us-east-2
