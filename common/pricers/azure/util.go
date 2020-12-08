@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/zparnold/azure-terraform-cost-estimator/common/types"
+	"github.com/zparnold/terraform-cost-estimator/common/types"
 	"k8s.io/klog"
 )
 

@@ -10,18 +10,18 @@ const (
 type ApiResp struct {
 	//Future Work
 	//PriceItems []ApiRespPriceItem `json:"price_items"`
-	UnsupportedResources    []string      `json:"unsupported_resources,omitempty"`
-	UnestimateableResources []string      `json:"unestimateable_resources,omitempty"`
-	TotalEstimate           EstimateTotal `json:"estimate_summary"`
+	UnsupportedResources    []string      `json:"unsupported_resources,omitempty",yaml:"unsupported_resources,omitempty"`
+	UnestimateableResources []string      `json:"unestimateable_resources,omitempty",yaml:"unestimateable_resources,omitempty"`
+	TotalEstimate           EstimateTotal `json:"estimate_summary",yaml:"estimate_summary"`
 }
 type EstimateTotal struct {
-	HourlyCost  float64 `json:"hourly_cost_usd"`
-	MonthlyCost float64 `json:"monthly_cost_usd"`
-	YearlyCost  float64 `json:"yearly_cost_usd"`
+	HourlyCost  float64 `json:"hourly_cost_usd",yaml:"hourly_cost_usd"`
+	MonthlyCost float64 `json:"monthly_cost_usd",yaml:"monthly_cost_usd"`
+	YearlyCost  float64 `json:"yearly_cost_usd",yaml:"yearly_cost_usd"`
 }
 type ApiRespPriceItem struct {
-	ResourceType string  `json:"resource_type"`
-	Price        float64 `json:"price"`
+	ResourceType string  `json:"resource_type",yaml:"resource_type"`
+	Price        float64 `json:"price",yaml:"price"`
 }
 
 /*

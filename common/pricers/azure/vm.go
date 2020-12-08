@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/zparnold/azure-terraform-cost-estimator/common/types"
+	"github.com/zparnold/terraform-cost-estimator/common/types"
 	"k8s.io/klog/v2"
 	"strings"
 )

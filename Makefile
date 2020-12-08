@@ -1,4 +1,4 @@
-.PHONY: build clean deploy test
+.PHONY: build clean deploy test cli
 
 build:
 	env GOOS=linux go build -ldflags="-s -w" -o bin/api api/main.go
@@ -14,3 +14,6 @@ deploy-dev: clean build
 
 test: clean
 	go test
+
+cli:
+	go build -o bin/tf-estimate cli/main.go
