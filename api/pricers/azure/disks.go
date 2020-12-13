@@ -10,6 +10,26 @@ import (
 
 const MONTH_HOURS = 730.0
 
+type ManagedDiskAssetPricer struct {
+}
+
+func (ap ManagedDiskAssetPricer) Keys() []string {
+	return []string{
+		"azurerm_managed_disk",
+	}
+}
+
+func (ap ManagedDiskAssetPricer) GeneratePricer(change common.ResourceChange) []common.Priceable {
+	return []common.Priceable{
+		&AzureDisk{
+			Location: change.Change.After.(map[string]interface{})["location"].(string),
+			SizeInGb: change.Change.After.(map[string]interface{})["disk_size_gb"].(float64),
+			SkuTier:  change.Change.After.(map[string]interface{})["storage_account_type"].(string),
+			Count:    1,
+		},
+	}
+}
+
 type AzureDisk struct {
 	SizeInGb float64
 	Location string

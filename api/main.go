@@ -8,9 +8,10 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-xray-sdk-go/xray"
 	"github.com/zparnold/azure-terraform-cost-estimator/api/errors"
-	"github.com/zparnold/azure-terraform-cost-estimator/api/pricers/azure"
+	"github.com/zparnold/azure-terraform-cost-estimator/api/pricers/planfile"
 	"github.com/zparnold/azure-terraform-cost-estimator/common"
 	"k8s.io/klog"
+	_ "github.com/zparnold/azure-terraform-cost-estimator/api/pricers/azure"
 )
 
 const (
@@ -73,8 +74,7 @@ func PricePlanFile(ctx context.Context, jsonBlob string) (float64, []string, []s
 		return 0.0, []string{}, []string{}, err
 	}
 	var hourlyPrice float64
-	pricer := PlanfilePricerInstance(ctx)
-	pricer.RegisterAssetPricer(azure.VirtualMachineAssetPricer{})
+	pricer := planfile.PlanfilePricerInstance(ctx)
 
 	for _, change := range pf.ResourceChanges {
 		//we only want to price Azure API changes
