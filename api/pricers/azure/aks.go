@@ -10,7 +10,7 @@ type AksAssetPricer struct {
 
 func (ap AksAssetPricer) Keys() []string {
 	return []string{
-		"azurerm_managed_disk",
+		"azurerm_kubernetes_cluster",
 	}
 }
 
